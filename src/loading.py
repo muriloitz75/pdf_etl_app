@@ -294,5 +294,68 @@ def create_summary_sheet(wb, df):
     ws_resumo.column_dimensions['G'].width = 15  # ISS PRÓPRIO
     ws_resumo.column_dimensions['H'].width = 15  # ISS RETIDO
 
+    # Adicionar linha de totais
+    row_num += 1  # Pular uma linha
+
+    # Adicionar célula de total
+    ws_resumo.cell(row=row_num, column=1).value = "TOTAL:"
+    ws_resumo.cell(row=row_num, column=1).font = Font(bold=True)
+    ws_resumo.cell(row=row_num, column=1).alignment = Alignment(horizontal='center')
+    ws_resumo.cell(row=row_num, column=1).border = thin_border
+
+    # Mesclar células para o rótulo "TOTAL:"
+    ws_resumo.merge_cells(start_row=row_num, start_column=1, end_row=row_num, end_column=2)
+
+    # Calcular totais para cada coluna
+    # Total de NFs Emitidas
+    total_nfs_emitidas = sum(ws_resumo.cell(row=r, column=3).value or 0 for r in range(3, row_num))
+    ws_resumo.cell(row=row_num, column=3).value = total_nfs_emitidas
+    ws_resumo.cell(row=row_num, column=3).font = Font(bold=True)
+    ws_resumo.cell(row=row_num, column=3).alignment = Alignment(horizontal='center')
+    ws_resumo.cell(row=row_num, column=3).border = thin_border
+
+    # Total de NFs Canceladas
+    total_nfs_canceladas = sum(ws_resumo.cell(row=r, column=4).value or 0 for r in range(3, row_num))
+    ws_resumo.cell(row=row_num, column=4).value = total_nfs_canceladas
+    ws_resumo.cell(row=row_num, column=4).font = Font(bold=True)
+    ws_resumo.cell(row=row_num, column=4).alignment = Alignment(horizontal='center')
+    ws_resumo.cell(row=row_num, column=4).border = thin_border
+
+    # Total de NFs Válidas
+    total_nfs_validas = sum(ws_resumo.cell(row=r, column=5).value or 0 for r in range(3, row_num))
+    ws_resumo.cell(row=row_num, column=5).value = total_nfs_validas
+    ws_resumo.cell(row=row_num, column=5).font = Font(bold=True)
+    ws_resumo.cell(row=row_num, column=5).alignment = Alignment(horizontal='center')
+    ws_resumo.cell(row=row_num, column=5).border = thin_border
+
+    # Total de BC Tributável
+    total_bc_tributavel = sum(ws_resumo.cell(row=r, column=6).value or 0 for r in range(3, row_num))
+    ws_resumo.cell(row=row_num, column=6).value = total_bc_tributavel
+    ws_resumo.cell(row=row_num, column=6).font = Font(bold=True)
+    ws_resumo.cell(row=row_num, column=6).number_format = 'R$ #,##0.00'
+    ws_resumo.cell(row=row_num, column=6).alignment = Alignment(horizontal='right')
+    ws_resumo.cell(row=row_num, column=6).border = thin_border
+
+    # Total de ISS Próprio
+    total_iss_proprio = sum(ws_resumo.cell(row=r, column=7).value or 0 for r in range(3, row_num))
+    ws_resumo.cell(row=row_num, column=7).value = total_iss_proprio
+    ws_resumo.cell(row=row_num, column=7).font = Font(bold=True)
+    ws_resumo.cell(row=row_num, column=7).number_format = 'R$ #,##0.00'
+    ws_resumo.cell(row=row_num, column=7).alignment = Alignment(horizontal='right')
+    ws_resumo.cell(row=row_num, column=7).border = thin_border
+
+    # Total de ISS Retido
+    total_iss_retido = sum(ws_resumo.cell(row=r, column=8).value or 0 for r in range(3, row_num))
+    ws_resumo.cell(row=row_num, column=8).value = total_iss_retido
+    ws_resumo.cell(row=row_num, column=8).font = Font(bold=True)
+    ws_resumo.cell(row=row_num, column=8).number_format = 'R$ #,##0.00'
+    ws_resumo.cell(row=row_num, column=8).alignment = Alignment(horizontal='right')
+    ws_resumo.cell(row=row_num, column=8).border = thin_border
+
+    # Adicionar preenchimento de cor para a linha de totais
+    total_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
+    for col in range(1, 9):
+        ws_resumo.cell(row=row_num, column=col).fill = total_fill
+
     # Congelar painel no cabeçalho
     ws_resumo.freeze_panes = 'A3'
