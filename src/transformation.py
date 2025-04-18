@@ -73,7 +73,7 @@ def clean_dataframe(df: pd.DataFrame, remove_empty_rows=True, remove_empty_cols=
     except Exception as e:
         print(f"Erro ao remover cabeçalhos/rodapés: {str(e)}")
 
-    # Adicionar coluna de competência baseada na data de emissão
+    # Formatar corretamente as datas de emissão e adicionar coluna de competência
     try:
         # Identificar a coluna de data de emissão
         date_columns = [col for col in df.columns if any(date_term in str(col).lower() for date_term in ['data', 'dt', 'date', 'emissão', 'emissao'])]
@@ -84,8 +84,10 @@ def clean_dataframe(df: pd.DataFrame, remove_empty_rows=True, remove_empty_cols=
             # Encontrar o índice da coluna para inserir a competência logo após
             col_index = list(df.columns).index(date_col)
 
-            # Criar a coluna de competência
+            # Formatar as datas de emissão corretamente
+            formatted_dates = []
             competencia_values = []
+
             for date_str in df[date_col]:
                 try:
                     # Limpar o valor da data (remover .0 e espaços)
@@ -94,32 +96,45 @@ def clean_dataframe(df: pd.DataFrame, remove_empty_rows=True, remove_empty_cols=
                     # Tentar extrair a data no formato DD/MM/YYYY
                     date_match = re.search(r'(\d{2})/(\d{2})/(\d{4})', clean_date)
                     if date_match:
-                        # Extrair mês e ano da data
+                        # Já está no formato correto
+                        dia = date_match.group(1)
                         mes = date_match.group(2)
                         ano = date_match.group(3)
+                        formatted_date = f"{dia}/{mes}/{ano}"
                         competencia = f"{mes}/{ano}"  # MM/AAAA
                     else:
                         # Tentar extrair a data no formato numérico (DDMMYYYY)
                         date_match = re.search(r'(\d{2})(\d{2})(\d{4})', clean_date)
                         if date_match:
-                            # Extrair mês e ano da data
+                            # Converter para formato DD/MM/YYYY
+                            dia = date_match.group(1)
                             mes = date_match.group(2)
                             ano = date_match.group(3)
+                            formatted_date = f"{dia}/{mes}/{ano}"
                             competencia = f"{mes}/{ano}"  # MM/AAAA
                         else:
                             # Tentar extrair a data no formato numérico (DMYYYY)
                             date_match = re.search(r'(\d{1})(\d{2})(\d{4})', clean_date)
                             if date_match:
-                                # Extrair mês e ano da data
+                                # Converter para formato DD/MM/YYYY
+                                dia = date_match.group(1)
                                 mes = date_match.group(2)
                                 ano = date_match.group(3)
+                                formatted_date = f"0{dia}/{mes}/{ano}"
                                 competencia = f"{mes}/{ano}"  # MM/AAAA
                             else:
+                                formatted_date = date_str  # Manter o valor original se não conseguir processar
                                 competencia = ""
                 except Exception as e:
                     print(f"Erro ao processar data '{date_str}': {str(e)}")
+                    formatted_date = date_str  # Manter o valor original se ocorrer erro
                     competencia = ""
+
+                formatted_dates.append(formatted_date)
                 competencia_values.append(competencia)
+
+            # Atualizar a coluna de data com os valores formatados
+            df[date_col] = formatted_dates
 
             # Inserir a coluna de competência após a coluna de data
             new_cols = list(df.columns)
