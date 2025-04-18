@@ -73,4 +73,71 @@ def clean_dataframe(df: pd.DataFrame, remove_empty_rows=True, remove_empty_cols=
     except Exception as e:
         print(f"Erro ao remover cabeçalhos/rodapés: {str(e)}")
 
+    # Adicionar coluna de competência baseada na data de emissão
+    try:
+        # Identificar a coluna de data de emissão
+        date_columns = [col for col in df.columns if any(date_term in str(col).lower() for date_term in ['data', 'dt', 'date', 'emissão', 'emissao'])]
+
+        if date_columns:
+            date_col = date_columns[0]  # Usar a primeira coluna de data encontrada
+
+            # Encontrar o índice da coluna para inserir a competência logo após
+            col_index = list(df.columns).index(date_col)
+
+            # Criar a coluna de competência
+            competencia_values = []
+            for date_str in df[date_col]:
+                try:
+                    # Limpar o valor da data (remover .0 e espaços)
+                    clean_date = str(date_str).replace('.0', '').strip()
+
+                    # Tentar extrair a data no formato DD/MM/YYYY
+                    date_match = re.search(r'(\d{2})/(\d{2})/(\d{4})', clean_date)
+                    if date_match:
+                        # Extrair mês e ano da data
+                        mes = date_match.group(2)
+                        ano = date_match.group(3)
+                        competencia = f"{mes}/{ano}"  # MM/AAAA
+                    else:
+                        # Tentar extrair a data no formato numérico (DDMMYYYY)
+                        date_match = re.search(r'(\d{2})(\d{2})(\d{4})', clean_date)
+                        if date_match:
+                            # Extrair mês e ano da data
+                            mes = date_match.group(2)
+                            ano = date_match.group(3)
+                            competencia = f"{mes}/{ano}"  # MM/AAAA
+                        else:
+                            # Tentar extrair a data no formato numérico (DMYYYY)
+                            date_match = re.search(r'(\d{1})(\d{2})(\d{4})', clean_date)
+                            if date_match:
+                                # Extrair mês e ano da data
+                                mes = date_match.group(2)
+                                ano = date_match.group(3)
+                                competencia = f"{mes}/{ano}"  # MM/AAAA
+                            else:
+                                competencia = ""
+                except Exception as e:
+                    print(f"Erro ao processar data '{date_str}': {str(e)}")
+                    competencia = ""
+                competencia_values.append(competencia)
+
+            # Inserir a coluna de competência após a coluna de data
+            new_cols = list(df.columns)
+            new_cols.insert(col_index + 1, 'competência')
+
+            # Criar um novo DataFrame com as colunas reorganizadas
+            new_df = pd.DataFrame(columns=new_cols)
+
+            # Copiar os dados do DataFrame original
+            for col in df.columns:
+                new_df[col] = df[col]
+
+            # Adicionar os valores de competência
+            new_df['competência'] = competencia_values
+
+            # Substituir o DataFrame original pelo novo
+            df = new_df
+    except Exception as e:
+        print(f"Erro ao adicionar coluna de competência: {str(e)}")
+
     return df

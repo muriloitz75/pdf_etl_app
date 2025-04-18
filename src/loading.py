@@ -57,6 +57,17 @@ def load_to_excel(df, excel_path):
                     # Garantir que o valor seja uma string
                     cell.value = str(cell.value)
 
+            # Formatar competência
+            if 'competência' in column_name:
+                # Verificar se o valor da célula é uma competência no formato MM/AAAA
+                if cell.value and re.match(r'\d{2}/\d{4}', str(cell.value)):
+                    # Formatar como texto para garantir que seja exibido corretamente
+                    cell.number_format = '@'
+                    # Garantir que o valor seja uma string
+                    cell.value = str(cell.value)
+                    # Centralizar o texto
+                    cell.alignment = Alignment(horizontal='center')
+
             # Formatar valores monetários
             if any(value_term in column_name for value_term in ['valor', 'vlr', 'preço', 'preco', 'total']):
                 cell.number_format = 'R$ #,##0.00'
