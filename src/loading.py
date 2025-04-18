@@ -69,19 +69,43 @@ def load_to_excel(df, excel_path):
                     # Centralizar o texto
                     cell.alignment = Alignment(horizontal='center')
 
+            # Formatar colunas de texto específicas
+            column_name_lower = str(column_name).lower()
+            if 'incidência' in column_name_lower or 'incidencia' in column_name_lower:
+                # Garantir que o texto seja exibido corretamente
+                cell.alignment = Alignment(horizontal='left', wrap_text=True)
+            elif 'nat' in column_name_lower and 'operação' in column_name_lower:
+                # Garantir que o texto seja exibido corretamente
+                cell.alignment = Alignment(horizontal='left', wrap_text=True)
+
             # Formatar valores monetários
             if any(value_term in column_name for value_term in ['valor', 'vlr', 'preço', 'preco', 'total']):
                 cell.number_format = 'R$ #,##0.00'
 
     # Ajustar largura das colunas
-    for col_num, _ in enumerate(df.columns, 1):
+    for col_num, column_name in enumerate(df.columns, 1):
         col_letter = get_column_letter(col_num)
         # Definir largura mínima e máxima
         max_length = 0
         for row_num in range(1, len(df) + 2):
             cell_value = str(ws.cell(row=row_num, column=col_num).value or '')
             max_length = max(max_length, len(cell_value))
+
+        # Ajustar largura com base no conteúdo
         adjusted_width = min(max(max_length + 2, 10), 50)  # Entre 10 e 50 caracteres
+
+        # Aumentar a largura para colunas específicas
+        column_name_lower = str(column_name).lower()
+        if 'incidência' in column_name_lower or 'incidencia' in column_name_lower:
+            # Garantir que a coluna de incidência tenha largura suficiente
+            adjusted_width = max(adjusted_width, 35)  # Mínimo de 35 caracteres
+        elif 'tomador' in column_name_lower and 'serviço' in column_name_lower:
+            # Garantir que a coluna de tomador do serviço tenha largura suficiente
+            adjusted_width = max(adjusted_width, 30)  # Mínimo de 30 caracteres
+        elif 'nat' in column_name_lower and 'operação' in column_name_lower:
+            # Garantir que a coluna de natureza da operação tenha largura suficiente
+            adjusted_width = max(adjusted_width, 20)  # Mínimo de 20 caracteres
+
         ws.column_dimensions[col_letter].width = adjusted_width
 
     # Congelar painel no cabeçalho

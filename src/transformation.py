@@ -155,4 +155,8 @@ def clean_dataframe(df: pd.DataFrame, remove_empty_rows=True, remove_empty_cols=
     except Exception as e:
         print(f"Erro ao adicionar coluna de competência: {str(e)}")
 
+    # Corrigir o campo de incidência para exibir o texto completo
+    if 'incidência' in df.columns:
+        df['incidência'] = df['incidência'].apply(lambda x: 'ESTAB. DO PRESTADOR' if str(x).startswith('ESTAB. DO') else x)
+
     return df
